@@ -90,47 +90,50 @@
     </h4>
 
     <div class="btn-container">
-        <!-- 🔗 Replace YOUR_GOOGLE_DRIVE_LINK_HERE -->
-        <button class="portal-btn" onclick="window.open('https://drive.google.com/file/d/1vCugJjUpt_St0BXPbE_FPmcd95cqL7Dl/view?usp=sharing','_blank')">
+
+        <button class="portal-btn"
+            onclick="window.open('https://drive.google.com/file/d/1vCugJjUpt_St0BXPbE_FPmcd95cqL7Dl/view?usp=sharing','_blank')">
             📁 Open Google Drive Files
         </button>
-
-        <!-- 🔗 Replace YOUR_GITHUB_HTML_LINK_HERE -->
-         <!-- <button class="portal-btn" onclick="openTool()"> -->
 
         <button class="portal-btn" onclick="openTool()">
             🚀 Launch Read-Aloud Tool
         </button>
+
     </div>
+
 <script>
 function openTool() {
-    // Check if browser supports microphone API
+
+    // Check browser compatibility
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         alert(
             "⚠️ Your browser does not support microphone access.\n\n" +
             "Please open this tool using:\n" +
             "➡ Microsoft Edge\n" +
             "➡ Google Chrome\n" +
-            "➡ Safari (iOS)\n\n" +
-            "Other browsers may block microphone features."
+            "➡ Safari (iOS)"
         );
         return;
     }
 
-    // Try requesting permission silently
+    // Request microphone permission BEFORE opening the tool
     navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(() => {
-            // Permission allowed → open the tool
+        .then(stream => {
+
+            // Stop audio tracks after permission granted
+            stream.getTracks().forEach(track => track.stop());
+
+            // Open your GitHub page
             window.open('https://ramzville.github.io/index/read-aloud.html');
         })
-        .catch(() => {
-            // Permission blocked → show message
+        .catch(err => {
             alert(
-                "⚠️ Microphone permission is blocked.\n\n" +
-                "Please re-open this tool using:\n" +
-                "➡ Microsoft Edge\n" +
-                "➡ Google Chrome\n\n" +
-                "These browsers allow microphone access for Read-Aloud Quest."
+                "⚠️ Microphone permission is blocked or denied.\n\n" +
+                "Please:\n" +
+                "1️⃣ Use Microsoft Edge, Chrome, or Safari\n" +
+                "2️⃣ Allow microphone when prompted\n\n" +
+                "The Read-Aloud Tool cannot work without mic access."
             );
         });
 }
@@ -138,6 +141,3 @@ function openTool() {
 
 </body>
 </html>
-
-
-
