@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>Gamified Read Aloud</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ✅ Added favicon -->
+<link rel="icon" type="image/x-icon" href="favicon.ico">
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -381,7 +383,7 @@
       });
   }
   speechSynthesis.onvoiceschanged = loadVoices;
-  loadVoices();
+//   loadVoices();
 
   // Paragraphs
   const paragraphs = {
@@ -474,7 +476,9 @@ document.querySelectorAll(".level-btn").forEach(btn => {
                 speechSynthesis.cancel();
                 let utter = new SpeechSynthesisUtterance(p.text);
                 let selectedVoiceIndex = document.getElementById("voice-select").value;
-                let selectedVoice = voices[selectedVoiceIndex] || voices[0];
+                // let selectedVoice = voices[selectedVoiceIndex] || voices[0];
+                let selectedVoice = voices[parseInt(selectedVoiceIndex)] || voices[0];
+
                 utter.voice = selectedVoice;
                 utter.rate = 1;
 
@@ -520,6 +524,9 @@ document.querySelectorAll(".level-btn").forEach(btn => {
 }
 
 
+function normalizeText(text) {
+    return text.replace(/[.,!?;:]/g, "").trim().split(/\s+/);
+}
 
   // ✅ Make controls draggable
   (function makeControlsDraggable() {
@@ -608,8 +615,11 @@ document.querySelectorAll(".level-btn").forEach(btn => {
               document.getElementById("results").innerHTML = "<b style='color:red'>Please select a paragraph first!</b>";
               return;
           }
-          let paraWords = paragraph.split(/\s+/);
-          let spokenWords = spokenText.trim().split(/\s+/);
+          let paraWords = normalizeText(paragraph);
+          let spokenWords = normalizeText(spokenText);
+
+        //   let paraWords = paragraph.split(/\s+/);
+        //   let spokenWords = spokenText.trim().split(/\s+/);
           let misreadWords = [], correctCount = 0;
           paraWords.forEach((word, i) => {
               if (spokenWords[i] && spokenWords[i].toLowerCase() === word.toLowerCase()) correctCount++;
