@@ -121,7 +121,7 @@ function openTool() {
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(() => {
             // Permission allowed → open the tool
-            window.open('https://ramzville.github.io/index/read-aloud.html', '_blank');
+            window.open('https://ramzville.github.io/index/read-aloud.html');
         })
         .catch(() => {
             // Permission blocked → show message
@@ -138,5 +138,6 @@ function openTool() {
 
 </body>
 </html>
+
 
 
