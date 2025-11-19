@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gamified Read Aloud</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 15px;
+        background: #f8f8f8;
+        max-width: 700px;
+        margin: auto;
+        position: relative;
+    }
+    h1 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 5px;
+        color: #007BFF;
+        margin-top: 50px;
+    }
+    h2.subtitle {
+        text-align: center;
+        font-size: 1rem;
+        color: #555;
+        margin-top: 0;
+    }
+    .top-buttons { 
+      position: absolute; 
+      top: 15px; 
+      right: 15px; 
+      display: flex; 
+      gap: 8px; 
+    }
+    .icon-btn {
+        background: #fff; 
+        padding: 5px;
+        border: none; 
+        border-radius: 50%;
+        width: 40px; 
+        height: 40px; 
+        font-size: 1.2rem;
+        cursor: pointer; 
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
+        transition: transform 0.2s, background 0.2s;
+    }
+   
+    .icon-btn:hover { 
+      transform: scale(1.1); 
+      background: #b1c8f7; 
+    }
+    .level-container {
+        display: flex; justify-content: center; gap: 10px;
+        margin: 50px 0 20px 0; flex-wrap: wrap;
+    }
+    .level-btn {
+        background: #ffffff; border: 2px solid #ccc;
+        border-radius: 10px; padding: 10px 15px;
+        cursor: pointer; font-size: 1rem;
+        color: black;
+        transition: transform 0.2s, background 0.2s;
+    }
+    .level-btn:hover { 
+      transform: scale(1.05); 
+      background: #f1f5f9; 
+    }
+    .paragraph-container {
+        background: white; padding: 15px; border-radius: 10px;
+        min-height: 80px; line-height: 1.5; font-size: 1.2rem;
+    }
+    .controls {
+      position: fixed; /* ✅ Makes it float */
+      bottom: 80px; /* ✅ Slightly above footer */
+      right: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 5px;
+      box-shadow: 0px 2px 10px rgba(0,0,0,0.3);
+      display: flex;
+      gap: 8px;
+      z-index: 2000;
+      touch-action: none; /* ✅ Prevents scrolling while dragging */
+  }
+
+  .controls button {
+        font-size: 1.4rem;
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    /* ✅ Red circular Start button */
+        #start-btn {
+            background: #ff3b30; /* iOS-like red record button */
+            color: white;
+        }
+        #start-btn:hover {
+            background: #e52b22;
+            transform: scale(1.1);
+        }
+
+        /* ✅ Normal Stop button */
+        #stop-btn {
+            background: #007BFF;
+            color: white;
+        }
+        #stop-btn:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+        }
+
+      /* ✅ Compact controls for mobile */
+    @media (max-width: 768px) {
+        .controls {
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+            /* width: 65px; */
+            border-radius: 50px;
+            bottom: 20px;
+        }
+
+        /* General button styles */
+        .controls button {
+            font-size: 1.4rem;
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        /* ✅ Red circular Start button */
+        #start-btn {
+            background: #ff3b30; /* iOS-like red record button */
+            color: white;
+        }
+        #start-btn:hover {
+            background: #e52b22;
+            transform: scale(1.1);
+        }
+
+        /* ✅ Normal Stop button */
+        #stop-btn {
+            background: #007BFF;
+            color: white;
+        }
+        #stop-btn:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+        }
+         .div-footer {
+          font-size: x-small;
+          padding: 5px;
+          }
+    }
+
+    button { 
+      font-size: 1rem; 
+      padding: 10px; 
+      border: none; 
+      border-radius: 5px; 
+      background: #007BFF; 
+      color: white; 
+      cursor: pointer; 
+      transition: all 0.3s ease-in-out; /* ✅ smooth animation */
+    }
+     button:hover { 
+      transform: scale(1.05);
+    }
+    button:disabled { 
+      background: #ccc; 
+      cursor: not-allowed; 
+    }
+    .progress-bar {
+        background: #e5e7eb; border-radius: 10px; height: 20px;
+        margin-top: 8px; overflow: hidden;
+    }
+    .progress-fill {
+        background: #22c55e; height: 100%; width: 0%;
+        transition: width 0.5s ease;
+    }
+    /* Modal Styling */
+    .modal {
+        display: none; position: fixed; z-index: 1000;
+        left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        justify-content: center; align-items: center;
+        padding: 10px;
+    }
+    .modal-content {
+        background: white; padding: 20px; border-radius: 12px;
+        max-width: 500px; width: 100%; text-align: center;
+    }
+    #paragraph-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .paragraph-option {
+        background: #f3f4f6; padding: 10px; border-radius: 8px;
+        cursor: pointer; display: flex; justify-content: space-between;
+        align-items: center; transition: background 0.2s, transform 0.2s;
+    }
+    .paragraph-option:hover { 
+      background: #e5e7eb; 
+      transform: scale(1.02); 
+    }
+
+    .preview-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #007BFF;
+      font-size: 1.4rem;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .preview-btn:hover {
+      transform: scale(1.2);
+    }
+    .preview-text {
+      margin: 5px 0 0 20px;
+      font-size: 0.9rem;
+      color: #444;
+      font-style: italic;
+    }
+
+    .preview-text p {
+      margin: 5px 0;
+      line-height: 1.4;
+      font-size: 0.95rem;
+    }
+
+
+    .close-btn {
+        background: #ef4444; color: white; border: none;
+        border-radius: 5px; padding: 8px 12px; margin-top: 15px;
+        cursor: pointer;
+    }
+
+    section{
+      margin-bottom: 60px;
+    }
+
+    /* Footer */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      background: #007BFF;
+      color: white;
+      font-size: 0.85rem;
+      padding: 5px 0;
+      line-height: 1.2; /* tighter spacing between lines */
+      }
+    footer p {
+        margin: 0; /* remove default spacing */
+    }
+
+    #results {
+      position: fixed;
+      bottom: 60px; /* ✅ Above footer */
+      left: 50%;
+      transform: translateX(-50%); /* ✅ Centers it horizontally */
+      /* max-width: 90%; ✅ Prevents it from being too wide on big screens */
+      background: rgba(255, 255, 255, 0.95);
+      overflow-y: auto; /* scroll if content is too tall */
+      padding: 8px 15px;
+      border-radius: 12px;
+      box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      font-size: 1rem;
+      z-index: 1500;
+  }
+
+
+    /* Blinking recording indicator */
+    .recording {
+      animation: blink 1s infinite;
+      color: red;
+      font-weight: bold;
+      display: inline-block;
+      }
+      @keyframes blink {
+          50% { opacity: 0; }
+      }
+</style>
+</head>
+<body>
+
+  <header>
+     <div class="top-buttons">
+      <button id="voice-btn" class="icon-btn" title="Select Voice">🎤</button>
+      <button id="help-btn" class="icon-btn" title="Reading Tips">❓</button>
+    </div>
+    <h1>🎯 Read-Aloud Quest</h1>
+    <h2 class="subtitle">Practice, Speak, and Level Up!</h2>
+  </header>
+  
+  <section>
+    <div class="level-container">
+        <button class="level-btn" data-level="basic">📖 Easy</button>
+        <button class="level-btn" data-level="average">📗 Moderate</button>
+        <button class="level-btn" data-level="advanced">📘 Advanced</button>
+    </div>
+
+    <div id="paragraph-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">📖 Choose a Paragraph</h2>
+            <div id="paragraph-list"></div>
+            <button class="close-btn" onclick="closeParagraphModal()">Cancel</button>
+        </div>
+    </div>
+
+    <div class="paragraph-container" id="text-to-read">Select a level to start!</div>
+
+    <div class="controls">
+      <button id="start-btn" title="Start Recording">🎙</button>
+      <button id="stop-btn" title="Stop Recording" disabled>⏹</button>
+    </div>
+
+
+    <div id="voice-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎤 Select Voice</h2>
+            <select id="voice-select"></select><br><br>
+            <button class="close-btn" onclick="closeVoiceModal()">Close</button>
+        </div>
+    </div>
+
+    <div id="instruction-modal" class="modal">
+        <div class="modal-content">
+            <h2>📢 Dear Learners</h2>
+            <p>✅ Make sure you are in a <b>silent area</b>.</p>
+            <p>✅ Use <b>earphones with mic</b> for better results.</p>
+            <p>✅ <b>Read aloud</b> so the system can hear your voice clearly.</p>
+            <p>✅ <b>Repeat</b> if necessary to achieve your goal.</p>
+            <p>✅ Keep practicing and reading every day!</p>
+            <button class="close-btn" onclick="closeModal()">Got it!</button>
+        </div>
+    </div>
+
+    <div  id="results"></div>
+  </section>
+
+  <footer>
+    <div class="div-footer">
+      <p>Developed by: Ramon P. Villanueva, Jr. (Ramz Ville) | Teacher II</p>
+      <p>SDO Cauayan City <br> Cauayan City Stand-Alone Senior High School</p>
+    </div>
+  </footer>
+
+  <script>
+  let paragraph = "";
+  let voices = [];
+  let recognition;
+  let spokenText = "";
+
+  // Load voices
+  function loadVoices() {
+      voices = speechSynthesis.getVoices();
+      let select = document.getElementById("voice-select");
+      select.innerHTML = "";
+      let filipinoVoices = voices.filter(v => v.lang.toLowerCase().includes("en-ph") || v.name.toLowerCase().includes("philippines"));
+      if (filipinoVoices.length === 0) filipinoVoices = voices.filter(v => v.lang.toLowerCase().startsWith("en"));
+      filipinoVoices.forEach((voice, i) => {
+          let opt = document.createElement("option");
+          opt.value = voices.indexOf(voice);
+          opt.textContent = `${voice.name} (${voice.lang})`;
+          select.appendChild(opt);
+      });
+  }
+  speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+
+  // Paragraphs
+  const paragraphs = {
+      basic: [
+          { title: "The Philippine Revolution", text: "Andres Bonifacio was a Filipino leader who wanted to free the Philippines from Spanish rule. He helped start the Philippine Revolution in 1896 by organizing the Katipunan, a secret society. The revolution aimed to gain independence and improve the lives of Filipinos. Despite many hardships, Filipinos fought bravely. The revolution showed the strong desire of the Filipino people to be free and independent. It marked an important step toward the country’s freedom." },
+          { title: "What is a Cell?", text: "Every living thing is made up of cells. A cell is the smallest unit that can carry out the basic functions of life. Some living things, like bacteria, have only one cell. Bigger animals and plants have many cells working together. Cells come in different shapes and sizes, but all cells have three important parts: the cell membrane, cytoplasm, and nucleus. <br><br> The cell membrane works like the skin of the cell, protecting it and controlling what goes in and out. Inside the cell is the cytoplasm, a jelly-like fluid where many chemical activities happen. The nucleus is the control center of the cell and holds the genetic material, which guides the cell's actions. <br><br> Some cells have special parts called organelles that perform specific jobs. For example, mitochondria give the cell energy, and ribosomes help make proteins. Plant cells have some parts that animal cells do not have, such as a cell wall for extra support and chloroplasts that help make food from sunlight." },
+          { title: "Understanding Media and Information Literacy", text: "Media and information literacy means having the skills to find, understand, evaluate, create, and share information from different sources. In today’s world, we see and hear messages from many places: television, radio, newspapers, websites, social media, and more. Being media literate helps us know if these messages are true, fair, and useful. <br><br>Media literacy teaches us to ask questions about what we see or read. Who made this message? Why did they make it? Is there a bias or opinion? Is the information supported by facts? It also helps us create our own media messages carefully and honestly.<br><br>Information literacy involves using tools like search engines and libraries to access reliable sources. It is important to check the credibility of the author and the date of information, especially online. By being media and information literate, we become responsible users and creators of media. This helps us make better decisions in school, work, and daily life." },
+          { title: "Building Growth Mindset in Learning", text: "Jasper, a senior high school student, always believed that intelligence was fixed and that struggling in school meant failure. When he faced challenges in Science and Mathematics, he often felt discouraged and doubted his abilities. One day, his teacher introduced him to the concept of a growth mindset—the understanding that intelligence can grow with effort and perseverance. Jasper began to see mistakes as learning opportunities and was motivated to keep trying despite difficulties. Over time, his grades improved, and he gained confidence in tackling complex problems. Jasper realized that embracing challenges, learning from feedback, and persistence were keys to academic success." },
+          { title: "The Richness of Philippine Literature", text: "Philippine literature is a treasure trove of stories, poems, and writings that reflect the diverse culture, history, and experiences of the Filipino people. From pre-colonial oral traditions, such as folk tales and epics, to modern works by contemporary authors, Philippine literature captures the soul of the nation. It includes regional literature from different dialect groups, national heroes’ writings, and celebrated works by national artists. Through literature, Filipinos express their identity, struggles, hopes, and dreams. Reading and appreciating these literary works deepen our understanding of the country’s past and present and inspire us to contribute to its future." }
+      ],
+      average: [
+          { title: "Life Skills for Everyday Success ", text: "Life skills are important abilities that help people handle daily challenges and make good decisions. These skills include communication, problem-solving, time management, and emotional control. Having strong life skills helps individuals manage responsibilities, build good relationships, and achieve their goals. <br><br>For example, communication skills help people express their thoughts clearly and listen to others. Problem-solving involves finding the best solutions to challenges. Time management means organizing tasks to finish them on time. Emotional control helps people stay calm in tough situations. <br><br>People can learn life skills at home, school, or in their communities. Parents, teachers, and mentors can teach and guide others to develop these skills. Practicing life skills builds confidence and independence, making life easier and more successful." },
+          { title: "Flood Control for Safer Communities ", text: "Flood control means the ways and structures used to reduce or prevent the damaging effects of floodwaters. Floods happen when rivers overflow, heavy rains fall, or coastal waters rise, causing water to cover areas that are usually dry. Floods can harm homes, roads, farms, and people’s lives. <br><br>There are many methods to control floods. Some examples are dams, which store extra water and release it slowly; levees, which are walls built along rivers to keep water from spilling over; and floodways, which are channels that direct floodwaters safely away from populated areas. Dredging, or removing sediment from riverbeds, helps water flow better and reduces flooding. <br><br>Natural places like floodplains and wetlands also help by absorbing excess water. New technology such as flood sensors and early warning systems warn people in advance, giving them time to prepare or evacuate. Green infrastructure, such as planting trees and using permeable pavements, helps absorb rainwater and prevent floods in cities. <br><br>Effective flood control combines structures, natural solutions, and community planning. It keeps people safe and reduces damage to property." },
+          { title: "Rocks and How They Form?", text: "Rocks are natural solid materials that form a large part of the Earth’s surface. They are composed of minerals and come in many types. The three main types of rocks—igneous, sedimentary, and metamorphic—are classified based on how they form through natural processes. <br><br>Igneous rocks form from molten rock called magma. When magma cools slowly beneath the Earth's surface, it forms igneous rocks with large crystals, such as granite. If magma erupts as lava and cools quickly on the surface, it creates rocks with very small crystals, like basalt. The rate at which magma cools determines the texture of the igneous rock. <br><br>Sedimentary rocks are formed from sediments, which are small particles of rock, minerals, and organic material. These sediments settle in layers over time and become compacted and cemented together, forming solid rock. Examples include sandstone and limestone. Fossils are often found in sedimentary rocks because living things can be trapped in the layers. <br><br>Metamorphic rocks start as either igneous or sedimentary rocks but change their form due to intense heat and pressure beneath the Earth's surface. This process, called metamorphism, alters the mineral composition and texture without melting the rock. For example, limestone can change into marble, and shale can become slate. <br><br>The rock cycle is a continuous process where rocks transform from one type to another through melting, cooling, weathering, erosion, heat, and pressure. This cycle explains how Earth's surface is always changing." },
+          { title: "Empowerment Technologies in the Digital Age ", text: "Empowerment technologies are tools and systems, especially those involving information and communication technologies (ICT), that enable people to perform tasks more efficiently, communicate easily, and access important information. Examples of these technologies include computers, mobile phones, the internet, and various software applications. <br><br>These technologies play a key role in enhancing communication. Through mobile phones and social media platforms, people can share ideas instantly, keep in touch with family and friends, and participate in social and professional communities regardless of location. This ability to connect improves collaboration and personal relationships.<br><br> Empowerment technologies also simplify education and business. Online learning platforms provide students the flexibility to study at their own pace, while businesses use websites and marketing apps to reach customers more effectively. Such technologies save time, reduce costs, and boost productivity. <br><br>Furthermore, empowerment technologies contribute to national modernization and economic growth. Countries that adopt and develop advanced digital tools improve their industries, services, and global competitiveness. The Philippines serves as a good example of a country that has progressed through embracing ICT and empowering its people. <br><br>In summary, empowerment technologies offer access to knowledge, improve communication, and create opportunities for personal and community development in today’s digital world." },
+          { title: "Understanding Chemical Reactions ", text: "A chemical reaction is a process where substances called reactants change to form new substances called products. During this process, the atoms in the reactants rearrange to make different compounds. Chemical reactions are important because they take place all around us—in cooking, breathing, and even in plants producing food. <br><br>There are many types of chemical reactions. In a synthesis reaction, two or more reactants combine to form a new compound. For example, hydrogen and oxygen gases react to make water in a synthesis reaction. <br><br>In a decomposition reaction, a single compound breaks down into two or more simpler substances. For example, water can be broken down into hydrogen and oxygen gases through electrolysis. <br><br>Single displacement reactions happen when one element replaces another in a compound. For example, zinc metal reacts with hydrochloric acid to produce zinc chloride and hydrogen gas by replacing the hydrogen. <br><br>Double displacement reactions occur when parts of two different compounds swap places, forming two new compounds. A common example is the reaction of silver nitrate and sodium chloride, which produces silver chloride and sodium nitrate. <br><br>Combustion is a reaction where a substance burns in oxygen and produces heat and light. Burning wood or gasoline are examples of combustion reactions where carbon dioxide and water are often produced. <br><br>Understanding chemical reactions helps explain many everyday activities and is important in science, industry, and environmental study." }
+      ],
+      advanced: [
+          { title: "English Communication: Connecting People Around the World", text: "English communication is like a bridge that connects people from different places and cultures. It is the skill of using the English language to share ideas, thoughts, and feelings clearly. This includes speaking with a strong voice, listening carefully, reading words correctly, and writing with proper spelling. <br><br>Imagine a busy classroom where students practice speaking English confidently. Some are reading stories aloud while others write letters to friends far away. Outside the classroom, people use English to chat with colleagues, send emails, or give presentations. English communication helps make these conversations smooth and meaningful. <br><br>In today’s world, English is a common language spoken by millions. It allows people from different countries to understand each other, whether they are traveling, working, or studying. When someone speaks English well, they can make new friends, participate in group discussions, and open doors to many opportunities. <br><br>Improving English communication is a journey. It begins by learning new vocabulary words and how to pronounce them correctly. It grows by practicing speaking confidently and listening to others. Reading stories, watching videos, and writing messages all help make English skills stronger. With time and effort, anyone can become a skilled English communicator who connects with the world around them." },
+          { title: "Understanding World Religions", text: "World religions encompass diverse systems of belief and ritual practiced by millions across the globe. They seek to answer profound existential questions, such as the purpose of life and the principles of ethical living. Prominent world religions include Christianity, Islam, Hinduism, Buddhism, and Judaism. Each tradition is characterized by sacred texts, rituals, and places of worship where adherents congregate. <br><br>Envision communities observing distinctive religious festivals. Some ignite candles in solemn ceremonies, others engage in prayer within temples or churches, and many study revered scriptures. These religions impart moral values such as compassion, reverence, and harmony, fostering peaceful coexistence among people. <br><br>Individuals adhere to religions to discover meaning, hope, and spiritual guidance. While distinct in their doctrines, many religions converge on similar teachings about love, altruism, and forgiveness. Gaining knowledge about world religions enhances intercultural understanding and respect, promoting unity in diversity. <br><br>Comprehending religions begins with exploring narratives and posing thoughtful questions. It deepens through studying religious symbols, rites, and holy celebrations. Cultivating openness and respect for differing beliefs contributes to fostering peace and solidarity among all humanity." },
+          { title: "Caring for Our Environment", text: "The environment is the natural world around us, including the air we breathe, the water we drink, and the land where plants, animals, and humans live. Caring for our environment means protecting these vital resources so that all living things can survive and prosper. It requires us to be aware of how our actions affect nature and to take steps to reduce pollution, conserve energy, and preserve natural habitats for future generations. <br><br>Imagine a neighborhood where people actively participate in caring for the environment. Families separate their trash to recycle paper, plastic, and glass. Community members plant trees in parks and gardens to provide shade and clean air. Schools teach students about the importance of clean water and fresh air, encouraging them to avoid littering and to use environmentally friendly products. Such collective efforts help create a cleaner and healthier place for everyone to live. <br><br>Despite these efforts, our environment faces serious challenges. Climate change caused by greenhouse gas emissions is altering weather patterns and threatening ecosystems. Deforestation removes vital habitats for wildlife and reduces the earth’s ability to absorb carbon dioxide. Pollution from factories, vehicles, and waste contaminates air, water, and soil, harming plants, animals, and humans alike. These environmental problems require urgent attention and action from individuals, communities, and governments. <br><br>Caring for the environment begins with simple habits anyone can adopt. Turning off lights and electronics when not in use conserves energy. Using reusable bags reduces plastic waste. Saving water by fixing leaks and not wasting it helps preserve this precious resource. Learning about nature and sharing knowledge with family and friends strengthens our commitment to environmental protection. When we all work together, we can help ensure the earth remains a clean, safe, and beautiful place for ourselves and for future generations." },
+          { title: "Epic Tales from Around the World", text: "Epics are long, often majestic stories that recount the heroic adventures and remarkable deeds of legendary figures from ancient times. These narratives were originally passed down orally from generation to generation before being written down, serving as a reflection of the values, customs, and history of the societies that shared them. Across the globe, many cultures have their own famous epics, which continue to inspire and entertain people today. <br><br>For instance, the Iliad and the Odyssey, composed by the ancient Greek poet Homer, tell gripping tales of the Trojan War and the epic journey of Odysseus as he struggles to return home. In India, the Mahabharata and the Ramayana stand as monumental epics that convey profound lessons about duty, heroism, and moral righteousness. Another monumental epic, the Epic of Gilgamesh from Mesopotamia, is one of the oldest surviving stories in human history, exploring universal themes such as friendship, the fear of death, and the pursuit of eternal life.<br><br>These grand epics are often filled with gods, mythical creatures, and courageous heroes who face tremendous challenges and overcome great obstacles. They helped ancient peoples make sense of the world around them and inspired ideals like bravery, loyalty, and honor. Today, these epic stories remain timeless and continue to be celebrated through literature, film, theater, and other forms of storytelling.<br><br>By reading and understanding epics, we gain insight into the diverse cultures and values of people from different times and places. These stories connect us to our shared human past and illustrate how storytelling has shaped civilizations throughout history. Epics remind us that the themes of struggle, heroism, and perseverance are universal, resonating with people across all cultures and generations." },
+          { title: "Discovering Philippine Heritage", text: "Philippine heritage refers to the rich history, culture, and traditions passed down through generations of Filipinos. This heritage includes ancient customs, colorful festivals, traditional music and dances, unique arts and crafts, and historical landmarks that tell the story of the Filipino people. It is a treasure that connects Filipinos to their ancestors and shapes their identity today.<br><br>For example, the Bayanihan spirit, which means helping one another, is a vital part of Philippine heritage. It shows the close-knit and caring nature of Filipino communities. Traditional dances like the Tinikling, performed with swift movements between bamboo poles, and the Ati-Atihan festival, with its vibrant costumes and joyful parades, celebrate Filipino creativity and joy.<br><br>The Philippines is also home to many important historical sites such as the Rizal Shrine and the centuries-old Banaue Rice Terraces. These landmarks reflect the courage, skill, and artistry of Filipinos throughout history. Preserving Philippine heritage through stories, customs, and monuments helps keep the nation’s spirit alive.<br><br>Learning about Philippine heritage helps Filipinos appreciate their culture and promotes pride in their roots. It encourages younger generations to honor their past while contributing to the nation’s future. Celebrating heritage is a way of showing respect for those who came before and understanding the diverse influences that have shaped the Philippines today." }
+      ]
+  };
+
+  // Show paragraph modal
+  document.querySelectorAll(".level-btn").forEach(btn => {
+      btn.addEventListener("click", () => showParagraphModal(btn.getAttribute("data-level")));
+  });
+
+  function showParagraphModal(level) {
+    const modal = document.getElementById("paragraph-modal");
+    const list = document.getElementById("paragraph-list");
+    const title = document.getElementById("modal-title");
+    title.textContent = `📖 Choose a Paragraph (${level.toUpperCase()})`;
+    list.innerHTML = "";
+
+    let activePreview = null; // track currently previewing paragraph
+
+    paragraphs[level].forEach((p, index) => {
+        let div = document.createElement("div");
+        div.classList.add("paragraph-option");
+
+        // Format preview text with <p> for readability
+        const formattedPreview = p.text
+            .split("<br><br>")
+            .map(par => `<p>${par.trim()}</p>`)
+            .join("");
+
+        // Create preview text container
+        let previewText = document.createElement("div");
+        previewText.classList.add("preview-text");
+        previewText.style.display = "none";
+        previewText.innerHTML = formattedPreview; // ✅ use formatted version
+
+        // Preview button with icon
+        let previewBtn = document.createElement("button");
+        previewBtn.classList.add("preview-btn");
+        previewBtn.innerHTML = "🔊"; // default speaker icon
+        previewBtn.style.fontSize = "1.2rem";
+        previewBtn.style.marginLeft = "10px";
+
+        previewBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            // If another preview is active, stop it first
+            if (activePreview && activePreview.btn !== previewBtn) {
+                speechSynthesis.cancel();
+                activePreview.text.style.display = "none";
+                activePreview.btn.innerHTML = "🔊";
+                activePreview = null;
+            }
+
+            if (previewBtn.innerHTML === "🔊") {
+                // Start preview
+                previewText.style.display = "block";
+                previewBtn.innerHTML = "⏹"; // change to stop icon
+
+                speechSynthesis.cancel();
+                let utter = new SpeechSynthesisUtterance(p.text);
+                let selectedVoiceIndex = document.getElementById("voice-select").value;
+                let selectedVoice = voices[selectedVoiceIndex] || voices[0];
+                utter.voice = selectedVoice;
+                utter.rate = 1;
+
+                // Auto-reset when speech ends
+                utter.onend = () => {
+                    previewText.style.display = "none";
+                    previewBtn.innerHTML = "🔊";
+                    activePreview = null;
+                };
+
+                speechSynthesis.speak(utter);
+                activePreview = { btn: previewBtn, text: previewText };
+
+            } else {
+                // Stop preview manually
+                previewText.style.display = "none";
+                previewBtn.innerHTML = "🔊";
+                speechSynthesis.cancel();
+                activePreview = null;
+            }
+        });
+
+        // Clicking the container selects paragraph
+        div.addEventListener("click", () => {
+            // Convert <br> into <p> for proper paragraph display
+            const formattedText = p.text
+                .split("<br><br>")
+                .map(par => `<p>${par.trim()}</p>`)
+                .join(""); 
+
+            document.getElementById("text-to-read").innerHTML = formattedText;
+            paragraph = p.text; // Keep original text for speech recognition
+            closeParagraphModal();
+        });
+
+        div.append(`${index + 1}. ${p.title} `);
+        div.appendChild(previewBtn);
+        div.appendChild(previewText);
+        list.appendChild(div);
+    });
+
+    modal.style.display = "flex";
+}
+
+
+
+  // ✅ Make controls draggable
+  (function makeControlsDraggable() {
+      const controls = document.querySelector(".controls");
+      let isDragging = false, offsetX = 0, offsetY = 0;
+
+      // Start drag only if the target is NOT a button
+      function startDrag(e) {
+          if (e.target.tagName === "BUTTON") return; // ✅ Ignore buttons
+
+          isDragging = true;
+          let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          offsetX = clientX - controls.getBoundingClientRect().left;
+          offsetY = clientY - controls.getBoundingClientRect().top;
+
+          document.addEventListener("mousemove", drag);
+          document.addEventListener("mouseup", stopDrag);
+          document.addEventListener("touchmove", drag, { passive: false });
+          document.addEventListener("touchend", stopDrag);
+      }
+
+      function drag(e) {
+          if (!isDragging) return;
+
+          let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+          controls.style.left = `${clientX - offsetX}px`;
+          controls.style.top = `${clientY - offsetY}px`;
+          controls.style.bottom = "auto"; // override fixed bottom
+          controls.style.right = "auto";
+
+          e.preventDefault(); // Prevent scrolling while dragging
+      }
+
+      function stopDrag() {
+          isDragging = false;
+          document.removeEventListener("mousemove", drag);
+          document.removeEventListener("mouseup", stopDrag);
+          document.removeEventListener("touchmove", drag);
+          document.removeEventListener("touchend", stopDrag);
+      }
+
+      // Event listeners
+      controls.addEventListener("mousedown", startDrag);
+      controls.addEventListener("touchstart", startDrag, { passive: false });
+  })();
+
+
+
+  function closeParagraphModal() {
+      speechSynthesis.cancel();
+      document.getElementById("paragraph-modal").style.display = "none";
+  }
+  document.getElementById("help-btn").addEventListener("click", () => {
+      document.getElementById("instruction-modal").style.display = "flex";
+  });
+  document.getElementById("voice-btn").addEventListener("click", () => {
+      document.getElementById("voice-modal").style.display = "flex";
+  });
+  function closeModal() { document.getElementById("instruction-modal").style.display = "none"; }
+  function closeVoiceModal() { document.getElementById("voice-modal").style.display = "none"; }
+
+  window.addEventListener("click", function(event) {
+      if (event.target.classList.contains("modal")) event.target.style.display = "none";
+  });
+  window.addEventListener("load", () => {
+      document.getElementById("instruction-modal").style.display = "flex";
+  });
+
+  // Speech Recognition
+  if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-PH';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.onresult = function(event) {
+          spokenText = "";
+          for (let i = 0; i < event.results.length; i++) {
+              spokenText += event.results[i][0].transcript + " ";
+          }
+      };
+      recognition.onend = function() {
+          if (!paragraph) {
+              document.getElementById("results").innerHTML = "<b style='color:red'>Please select a paragraph first!</b>";
+              return;
+          }
+          let paraWords = paragraph.split(/\s+/);
+          let spokenWords = spokenText.trim().split(/\s+/);
+          let misreadWords = [], correctCount = 0;
+          paraWords.forEach((word, i) => {
+              if (spokenWords[i] && spokenWords[i].toLowerCase() === word.toLowerCase()) correctCount++;
+              else misreadWords.push(word);
+          });
+          let accuracy = ((correctCount / paraWords.length) * 100).toFixed(1);
+          document.getElementById("results").innerHTML = `
+              <b>Accuracy:</b> ${accuracy}%<br>
+              <b>Correct Words:</b> ${correctCount}/${paraWords.length}<br>
+              <b>Misread Words:</b> ${misreadWords.length ? misreadWords.join(", ") : "None"}
+              <div class="progress-bar"><div class="progress-fill" style="width:${accuracy}%"></div></div>
+          `;
+          document.getElementById("start-btn").disabled = false;
+          document.getElementById("stop-btn").disabled = true;
+      };
+
+      document.getElementById("start-btn").addEventListener("click", () => {
+        if (!paragraph) {
+            alert("Please select a paragraph first!");
+            return;
+        }
+
+        let startBtn = document.getElementById("start-btn");
+        let stopBtn = document.getElementById("stop-btn");
+        let resultsDiv = document.getElementById("results");
+
+        startBtn.disabled = true;
+        resultsDiv.innerHTML = "<b>Get ready to read in...</b>";
+
+        let count = 3;
+        let countdown = document.createElement("div");
+        countdown.style.fontSize = "2rem";
+        countdown.style.fontWeight = "bold";
+        countdown.style.color = "red";
+        resultsDiv.appendChild(countdown);
+
+        let interval = setInterval(() => {
+            countdown.textContent = count;
+            playBeep(count === 0 ? 700 : 400); // Higher pitch for final beep
+            count--;
+            if (count < 0) {
+                clearInterval(interval);
+
+                // Show recording notification
+                resultsDiv.innerHTML = `<span class="recording">🎙 Recording in Progress...</span>`;
+
+                spokenText = "";
+                recognition.start();
+                stopBtn.disabled = false;
+            }
+        }, 1000);
+    });
+
+    /** ✅ Beep Sound Generator */
+    function playBeep(frequency = 400) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.2, ctx.currentTime); // volume
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.2); // 0.2s beep
+    }
+
+      // document.getElementById("stop-btn").addEventListener("click", () => recognition.stop());
+      document.getElementById("stop-btn").addEventListener("click", () => {
+    try {
+        recognition.stop();
+        document.getElementById("stop-btn").disabled = true;
+        document.getElementById("start-btn").disabled = false;
+    } catch (err) {
+        console.warn("Recognition stop failed:", err);
+    }
+    finalizeResults(); // ✅ Force run results manually
+});
+
+
+function finalizeResults() {
+    if (!paragraph) return;
+    let paraWords = paragraph.split(/\s+/);
+    let spokenWords = spokenText.trim().split(/\s+/);
+    let misreadWords = [], correctCount = 0;
+    paraWords.forEach((word, i) => {
+        if (spokenWords[i] && spokenWords[i].toLowerCase() === word.toLowerCase()) correctCount++;
+        else misreadWords.push(word);
+    });
+    let accuracy = ((correctCount / paraWords.length) * 100).toFixed(1);
+    document.getElementById("results").innerHTML = `
+        <b>Accuracy:</b> ${accuracy}%<br>
+        <b>Correct Words:</b> ${correctCount}/${paraWords.length}<br>
+        <b>Misread Words:</b> ${misreadWords.length ? misreadWords.join(", ") : "None"}
+        <div class="progress-bar"><div class="progress-fill" style="width:${accuracy}%"></div></div>
+    `;
+    document.getElementById("start-btn").disabled = false;
+    document.getElementById("stop-btn").disabled = true;
+}
+
+
+  } else {
+      document.getElementById("results").innerHTML = "<b style='color:red'>Speech recognition not supported on this browser.</b>";
+      document.getElementById("start-btn").disabled = true;
+  }
+  </script>
+</body>
+</html>
