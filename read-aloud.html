@@ -409,9 +409,19 @@
   };
 
   // Show paragraph modal
-  document.querySelectorAll(".level-btn").forEach(btn => {
-      btn.addEventListener("click", () => showParagraphModal(btn.getAttribute("data-level")));
-  });
+//   document.querySelectorAll(".level-btn").forEach(btn => {
+//       btn.addEventListener("click", () => showParagraphModal(btn.getAttribute("data-level")));
+//   });
+document.querySelectorAll(".level-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        // Hide results panel
+        document.getElementById("results").style.display = "none";
+
+        // Show paragraph selection modal
+        showParagraphModal(btn.getAttribute("data-level"));
+    });
+});
+
 
   function showParagraphModal(level) {
     const modal = document.getElementById("paragraph-modal");
@@ -625,7 +635,7 @@
         let startBtn = document.getElementById("start-btn");
         let stopBtn = document.getElementById("stop-btn");
         let resultsDiv = document.getElementById("results");
-
+        document.getElementById("results").style.display = "block";
         startBtn.disabled = true;
         resultsDiv.innerHTML = "<b>Get ready to read in...</b>";
 
