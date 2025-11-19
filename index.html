@@ -96,12 +96,45 @@
         </button>
 
         <!-- 🔗 Replace YOUR_GITHUB_HTML_LINK_HERE -->
-        <button class="portal-btn" onclick="window.open('https://ramzville.github.io/read-aloud.html','_blank')">
+         <!-- <button class="portal-btn" onclick="openTool()"> -->
+
+        <button class="portal-btn" onclick="openTool()">
             🚀 Launch Read-Aloud Tool
         </button>
     </div>
+<script>
+function openTool() {
+    // Check if browser supports microphone API
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert(
+            "⚠️ Your browser does not support microphone access.\n\n" +
+            "Please open this tool using:\n" +
+            "➡ Microsoft Edge\n" +
+            "➡ Google Chrome\n" +
+            "➡ Safari (iOS)\n\n" +
+            "Other browsers may block microphone features."
+        );
+        return;
+    }
+
+    // Try requesting permission silently
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(() => {
+            // Permission allowed → open the tool
+            window.open('https://ramzville.github.io/index/', '_blank');
+        })
+        .catch(() => {
+            // Permission blocked → show message
+            alert(
+                "⚠️ Microphone permission is blocked.\n\n" +
+                "Please re-open this tool using:\n" +
+                "➡ Microsoft Edge\n" +
+                "➡ Google Chrome\n\n" +
+                "These browsers allow microphone access for Read-Aloud Quest."
+            );
+        });
+}
+</script>
 
 </body>
 </html>
-
-
